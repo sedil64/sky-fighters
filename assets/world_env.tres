@@ -1,0 +1,37 @@
+[gd_resource type="Environment" load_steps=3 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="skymat"]
+sky_top_color = Color(0.13, 0.38, 0.85, 1)
+sky_horizon_color = Color(0.66, 0.82, 0.98, 1)
+sky_curve = 0.12
+ground_bottom_color = Color(0.3, 0.5, 0.85, 1)
+ground_horizon_color = Color(0.66, 0.82, 0.98, 1)
+ground_curve = 0.06
+sun_angle_max = 20.0
+sun_curve = 0.1
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("skymat")
+
+[resource]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+ambient_light_energy = 0.75
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_exposure = 0.98
+tonemap_white = 6.0
+glow_enabled = true
+glow_intensity = 0.6
+glow_bloom = 0.05
+glow_hdr_threshold = 0.9
+fog_enabled = true
+fog_light_color = Color(0.7, 0.82, 0.98, 1)
+fog_sun_scatter = 0.15
+fog_density = 0.004
+fog_aerial_perspective = 0.4
+fog_sky_affect = 0.0
+adjustment_enabled = true
+adjustment_contrast = 1.06
+adjustment_saturation = 1.08

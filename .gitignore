@@ -1,0 +1,17 @@
+# Caché e importaciones de Godot (se regeneran al abrir el proyecto)
+.godot/
+/android/
+
+# Compilaciones y exportaciones
+/build/
+*.apk
+*.aab
+*.idsig
+
+# Python
+__pycache__/
+*.pyc
+
+# Sistema
+.DS_Store
+*.tmp
