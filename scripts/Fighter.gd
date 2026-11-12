@@ -65,8 +65,10 @@ const LAUNCH_KB := 13.0
 @export var gravity := 32.0
 @export var max_fall := 15.0
 @export var fast_fall := 24.0
-@export var jump_velocity := 12.5
-@export var air_jump_velocity := 11.5
+@export var jump_velocity := 14.0
+@export var air_jump_velocity := 13.5
+## Duración de la voltereta del doble salto (segundos).
+@export var flip_time := 0.45
 @export var air_jumps := 1
 ## Más peso = sale volando menos.
 @export var weight := 1.0
@@ -98,6 +100,7 @@ var _was_on_floor := false
 var _pivot: Node3D           ## gira hacia donde mira
 var _body: Node3D            ## estirar/aplastar y embestidas
 var _squash := Vector3.ONE
+var _flip := 0.0              ## tiempo que queda de voltereta (doble salto)
 var _flash := 0.0
 var _flash_material: StandardMaterial3D
 var _meshes: Array[MeshInstance3D] = []
@@ -220,6 +223,7 @@ func _physics_process(dt: float) -> void:
 			velocity = Vector3.ZERO
 		else:
 			_squash = Vector3(1.25, 0.75, 1.25)
+		_flip = 0.0
 		if attack.begins_with("air"):
 			_end_attack()
 	_was_on_floor = is_on_floor()
@@ -274,7 +278,7 @@ func _update_control(dt: float, on_floor: bool) -> void:
 			velocity.y = air_jump_velocity
 			velocity.x = ix * air_speed
 			_fast_falling = false
-			_squash = Vector3(0.8, 1.25, 0.8)
+			_flip = flip_time
 	# Salto corto si sueltas pronto.
 	if _jr("jump") and velocity.y > 0.0:
 		velocity.y *= 0.55
@@ -322,6 +326,7 @@ func _start_attack(on_floor: bool, ix: float) -> void:
 		attack = "air_up" if up else ("air_down" if down else "air")
 	attack_time = 0.0
 	_attack_serial += 1
+	_flip = 0.0
 	_hit_list.clear()
 
 
@@ -378,6 +383,7 @@ func take_hit(a: Dictionary, dir: int) -> void:
 	_fast_falling = false
 	_end_attack()
 	_hit_serial += 1
+	_flip = 0.0
 	_flash = 1.0
 	damaged.emit(self)
 
@@ -471,7 +477,14 @@ func _process(dt: float) -> void:
 		stretch = _proc_stretch
 	if hitstun > 0.0:
 		offset.x += randf_range(-0.04, 0.04)
-	_body.position = offset
+	if _flip > 0.0:
+		# Voltereta hacia delante: una vuelta completa, rápida al principio y frenando al final.
+		_flip = maxf(_flip - dt, 0.0)
+		var k := 1.0 - _flip / flip_time
+		rot.x += TAU * (1.0 - pow(1.0 - k, 2.0))
+	# Girar alrededor del centro del cuerpo (no de los pies).
+	var center := Vector3(0.0, model_height * 0.5, 0.0)
+	_body.position = offset + center - Basis.from_euler(rot) * center
 	_body.rotation = rot
 	_body.scale = _squash * stretch
 	# Parpadeo blanco al recibir golpe (azulado si lo para el escudo).

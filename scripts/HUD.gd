@@ -5,6 +5,8 @@ var _panels := {}
 var _pause: PanelContainer
 var _end: PanelContainer
 var _end_title: Label
+var _touch: Control
+var _pause_button: Button
 
 
 func _ready() -> void:
@@ -43,6 +45,17 @@ func setup(fighters: Array[Fighter]) -> void:
 	UiKit.button(vb, "Reiniciar", func(): Game.start(Game.mode), false)
 	UiKit.button(vb, "Menú principal", Game.to_menu, false)
 
+	# Controles táctiles (solo para el jugador 1, así que solo contra la CPU)
+	# y botón de pausa en pantalla.
+	if Inputs.touch_mode:
+		if Game.mode == "cpu":
+			_touch = preload("res://scripts/TouchControls.gd").new()
+			add_child(_touch)
+			move_child(_touch, 0)
+		_pause_button = UiKit.button(self, "II", toggle_pause, false, Vector2(76, 76))
+		get_viewport().size_changed.connect(_place_touch)
+		_place_touch.call_deferred()
+
 	_end = UiKit.panel(self)
 	vb = _end.get_child(0)
 	_end_title = UiKit.label(vb, 52, Color("#fff3c4"), 12)
@@ -78,16 +91,41 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+func _notification(what: int) -> void:
+	# Botón "atrás" de Android: pausa (o la quita).
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and _end and not _end.visible:
+		toggle_pause()
+
+
+func _place_touch() -> void:
+	var m := Inputs.safe_margins(get_viewport())
+	if _touch:
+		_touch.safe_margins = m
+	if _pause_button:
+		var w := get_viewport().get_visible_rect().size.x
+		_pause_button.position = Vector2(w - 76 - 20 - m.z, 20 + m.y)
+
+
 func toggle_pause() -> void:
 	var paused := not get_tree().paused
 	get_tree().paused = paused
 	_show(_pause, paused)
+	if _touch:
+		_touch.reset()
+		_touch.visible = not paused
+	if _pause_button:
+		_pause_button.visible = not paused
 
 
 func show_winner(name: String) -> void:
 	_end_title.text = "¡Gana %s!" % name if name != "" else "¡Empate!"
 	# Deja ver un momento la celebración antes de sacar el panel.
 	await get_tree().create_timer(1.2).timeout
+	if _touch:
+		_touch.reset()
+		_touch.visible = false
+	if _pause_button:
+		_pause_button.visible = false
 	_show(_end, true)
 
 

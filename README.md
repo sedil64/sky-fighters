@@ -21,6 +21,18 @@ Se maneja con ratón, teclado (flechas + Enter, Esc para volver) o mando. En par
 
 Contra la CPU, el jugador 1 puede usar cualquiera de los dos juegos de teclas. R = reiniciar.
 
+## Android
+En el móvil salen controles táctiles para el jugador 1 (`scripts/TouchControls.gd`): joystick a la izquierda (aparece
+donde pongas el dedo; inclinarlo arriba/abajo elige el ataque, abajo también es caída rápida y bajar de plataforma) y
+botones Atacar, Saltar y Escudo a la derecha. Botón de pausa arriba a la derecha y "atrás" de Android = pausa.
+En táctil el menú solo ofrece 2 jugadores si hay dos mandos conectados.
+
+Exportar (preset "Android" en `export_presets.cfg`, paquete `com.example.skyfighters`, firmado con la llave de depuración):
+```
+godot --headless --path . --export-debug "Android" "Sky Fighters.apk"
+```
+La exportación deja fuera `tools/` y `assets/concepts/`.
+
 ## Estructura
 - `scenes/Arena.tscn` + `scripts/Arena.gd`: escenario (isla principal y 3 plataformas que se atraviesan desde abajo),
   aparición, zonas de KO, reaparición, fin de partida y hit-stop.
@@ -59,7 +71,9 @@ Estado: trapo en 3D y animado. Robot, sombra y neón: solo concepto.
 ```
 godot --headless --path . --script res://tools/fight_test.gd
 godot --headless --path . --script res://tools/cpu_test.gd
+godot --headless --path . --script res://tools/touch_test.gd
 ```
+`touch_test` simula dedos en la pantalla: joystick, atacar, saltar, escudo, joystick arriba + atacar y pausa.
 `cpu_test` enfrenta a la CPU de cada dificultad a un jugador quieto durante 25 s: comprueba que se acerca, que pega,
 que no se cae sola y que la difícil hace más daño que la fácil.
 Comprueba: correr, ataque lateral con daño y empuje, empuje según %, doble salto, plataformas blandas

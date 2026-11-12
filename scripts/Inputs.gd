@@ -18,7 +18,13 @@ const PAD_AXES := {"left": [JOY_AXIS_LEFT_X, -1.0], "right": [JOY_AXIS_LEFT_X, 1
 	"up": [JOY_AXIS_LEFT_Y, -1.0], "down": [JOY_AXIS_LEFT_Y, 1.0]}
 
 
+## true en móviles / pantallas táctiles: muestra los controles en pantalla.
+var touch_mode := false
+
+
 func _ready() -> void:
+	touch_mode = OS.has_feature("mobile") or OS.has_feature("web_android") \
+		or OS.has_feature("web_ios")
 	for p in KEYS:
 		for name in KEYS[p]:
 			var action := "p%d_%s" % [p, name]
@@ -74,3 +80,21 @@ func _simple(action: String, keys: Array, button: int) -> void:
 	b.button_index = button
 	b.device = -1
 	InputMap.action_add_event(action, b)
+
+
+## Márgenes (izq, arriba, der, abajo) que hay que dejar libres por muescas,
+## esquinas redondeadas o barras del sistema, en unidades del canvas.
+## (Copiado de Sky Explorer.)
+func safe_margins(vp: Viewport) -> Vector4:
+	if not touch_mode:
+		return Vector4.ZERO
+	var win := Rect2(DisplayServer.window_get_position(), DisplayServer.window_get_size())
+	var safe := Rect2(DisplayServer.get_display_safe_area())
+	if win.size.x <= 0 or safe.size.x <= 0:
+		return Vector4.ZERO
+	var scale := vp.get_visible_rect().size / win.size
+	return Vector4(
+		maxf(safe.position.x - win.position.x, 0.0) * scale.x,
+		maxf(safe.position.y - win.position.y, 0.0) * scale.y,
+		maxf(win.end.x - safe.end.x, 0.0) * scale.x,
+		maxf(win.end.y - safe.end.y, 0.0) * scale.y)

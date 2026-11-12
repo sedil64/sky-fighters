@@ -88,7 +88,9 @@ func _build_ui() -> void:
 	_main = UiKit.panel(_ui)
 	var vb := _main.get_child(0)
 	UiKit.button(vb, "1 jugador (contra la CPU)", func(): _show(_difficulty), true, Vector2(420, 68))
-	UiKit.button(vb, "2 jugadores", func(): Game.start("versus"), false, Vector2(420, 68))
+	# En el móvil, 2 jugadores solo tiene sentido con dos mandos conectados.
+	if not Inputs.touch_mode or Input.get_connected_joypads().size() >= 2:
+		UiKit.button(vb, "2 jugadores", func(): Game.start("versus"), false, Vector2(420, 68))
 	if not OS.has_feature("web"):
 		UiKit.button(vb, "Salir", func(): get_tree().quit(), false, Vector2(420, 68))
 
@@ -113,8 +115,12 @@ func _build_ui() -> void:
 	UiKit.button(vb, "Volver", func(): _show(_main), false, Vector2(420, 50))
 
 	_hint = UiKit.label(_ui, 18, Color(1, 1, 1, 0.85), 5)
-	_hint.text = "J1: WASD + F ataque, G escudo  ·  J2: flechas + K ataque, L escudo  ·  " \
-		+ "Contra la CPU puedes usar cualquiera  ·  Esc pausa"
+	if Inputs.touch_mode:
+		_hint.text = "Joystick a la izquierda · Atacar, Saltar y Escudo a la derecha · " \
+			+ "inclina el joystick para elegir el ataque"
+	else:
+		_hint.text = "J1: WASD + F ataque, G escudo  ·  J2: flechas + K ataque, L escudo  ·  " \
+			+ "Contra la CPU puedes usar cualquiera  ·  Esc pausa"
 
 
 func _show(panel: PanelContainer) -> void:
@@ -132,6 +138,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and _difficulty.visible:
 		_show(_main)
 		get_viewport().set_input_as_handled()
+
+
+func _notification(what: int) -> void:
+	# Botón "atrás" de Android: volver, o salir desde el menú principal.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if _difficulty and _difficulty.visible:
+			_show(_main)
+		else:
+			get_tree().quit()
 
 
 ## Título y botones en la mitad derecha (el muñeco queda a la izquierda).
