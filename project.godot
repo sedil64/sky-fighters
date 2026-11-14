@@ -13,9 +13,9 @@ config_version=5
 config/name="Sky Fighters"
 config/description="Lucha tipo plataformas con el estilo de Sky Explorer."
 run/main_scene="res://scenes/Menu.tscn"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
-config/quit_on_go_back=false
 
 [autoload]
 
